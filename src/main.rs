@@ -1,9 +1,21 @@
-use edit_xlsx::{Workbook, WorkbookResult};
+use crate::db::*;
+use anyhow::Result;
 
-use crate::lib::crear_plantilla_db;
+mod db;
 
-pub mod lib;
-fn main() -> WorkbookResult<()>{
-    let _ = crear_plantilla_db();
+const DB_PATH: &str = "data/inventario.db";
+
+fn main() -> Result<()>{
+
+    let db_path = DB_PATH;
+    let conn = crear_conexion(db_path)?;
+
+    //crear tabla
+    crear_tabla(&conn)?;
+
+    insertar_articulos(&conn, 1111, "pan", 15.50)?;
+
     Ok(())
 }
+
+
