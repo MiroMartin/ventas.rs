@@ -41,7 +41,7 @@ pub fn crear_tabla(conn: &Connection) -> Result<()> {
 
 pub fn insertar_articulos(conn: &Connection, codigo: i64, nombre: &str, precio: f64) -> Result<()> {
     conn.execute(
-        "INSERT INTO articulos (codigo, nombre, precio) VALUES (?1, ?2, ?3)",
+        "INSERT OR IGNORE INTO articulos (codigo, nombre, precio) VALUES (?1, ?2, ?3)",
         params![codigo, nombre, precio],
     )?;
 
@@ -49,4 +49,35 @@ pub fn insertar_articulos(conn: &Connection, codigo: i64, nombre: &str, precio: 
     Ok(())
 }
 
-//TODO: seguir agregando funciones (leer db, actualizar y eliminar)
+pub fn get_articulos(conn: &Connection) -> Result<Vec<String>> {
+    let mut stmt = conn.prepare("SELECT nombre FROM articulos")?;
+    let rows = stmt.query_map([], |row| row.get(0))?;
+
+    let mut nombre = Vec::new();
+    for name_result in rows {
+        nombre.push(name_result?);
+    }
+    Ok(nombre)
+}
+
+pub fn update_articulo_precio(conn: &Connection, codigo: i64, nuevo_precio: f64) -> Result<()> {
+    conn.execute(
+        "UPDATE articulos SET precio = ?1 WHERE codigo = ?2",
+        params![nuevo_precio, codigo],
+        )?;
+
+    println!("Precio del articulo codigo {} actualizado a {}", codigo, nuevo_precio);
+    Ok(())
+}
+
+pub fn delete_articulo(conn: &Connection, codigo: i64) -> Result<()> {
+    conn.execute(
+        "DELETE FROM articulos WHERE codigo = ?1",
+        params![codigo],
+        )?;
+
+        println!("Articulo {} eliminado", codigo);
+    Ok(())
+}
+
+//TODO: implementar el TUI para mostrar el inventario
